@@ -58,6 +58,7 @@ RUN apt-get update && apt-get install -y \
     libffi7 \
     zlib1g \
     bash \
+    wget \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir /var/run/sshd
@@ -73,6 +74,28 @@ RUN echo 'root:spark' | chpasswd \
 # Configure LD
 RUN echo "/usr/local/lib" > /etc/ld.so.conf.d/python3.9.conf \
     && mkdir -p /root/.ssh && chmod 700 /root/.ssh
+
+# Create directories for database drivers and custom files
+RUN mkdir -p /opt/spark/jars/db-drivers \
+    && mkdir -p /opt/spark/jars/custom \
+    && mkdir -p /opt/spark/conf/custom
+
+# Download common database drivers
+RUN cd /opt/spark/jars/db-drivers && \
+    # MySQL driver
+    wget https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.28/mysql-connector-java-8.0.28.jar -O mysql-connector.jar && \
+    # PostgreSQL driver
+    wget https://jdbc.postgresql.org/download/postgresql-42.5.1.jar -O postgresql-connector.jar && \
+    # MS SQL Server driver
+    wget https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/9.4.1.jre11/mssql-jdbc-9.4.1.jre11.jar -O mssql-connector.jar && \
+    # MongoDB Spark connector
+    wget https://repo1.maven.org/maven2/org/mongodb/spark/mongo-spark-connector_2.12/3.0.1/mongo-spark-connector_2.12-3.0.1.jar -O mongodb-connector.jar && \
+    # Oracle JDBC driver
+    wget https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc8/21.7.0.0/ojdbc8-21.7.0.0.jar -O oracle-connector.jar
+
+# Copy database configuration script
+COPY db-config.sh /opt/spark/bin/
+RUN chmod +x /opt/spark/bin/db-config.sh
 
 # Copy Python and Spark
 COPY --from=builder /usr/local/lib/ /usr/local/lib/
@@ -96,6 +119,13 @@ ENV LD_LIBRARY_PATH="/usr/local/lib:/usr/lib:/lib"
 # Refresh library cache
 RUN ldconfig
 
+# Install PyMongo and other Python database connectors
+RUN pip install --no-cache-dir \
+    pymongo \
+    pymysql \
+    psycopg2-binary \
+    sqlalchemy
+
 # Verify installation
 RUN java -version \
  && python --version \
@@ -104,7 +134,11 @@ RUN java -version \
 
 # Add startup script
 RUN echo '#!/bin/bash' > /entrypoint.sh \
+    && echo 'echo "Starting SSH service..."' >> /entrypoint.sh \
     && echo 'service ssh start' >> /entrypoint.sh \
+    && echo 'echo "Configuring database connections..."' >> /entrypoint.sh \
+    && echo '/opt/spark/bin/db-config.sh' >> /entrypoint.sh \
+    && echo 'echo "Spark environment is ready"' >> /entrypoint.sh \
     && echo 'tail -f /dev/null' >> /entrypoint.sh \
     && chmod +x /entrypoint.sh
 

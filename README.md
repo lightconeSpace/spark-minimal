@@ -14,6 +14,7 @@ For questions or suggestions for improvement, please contact me on [GitHub](http
 - **Python**: 3.9.18
 - **JDK/JRE**: OpenJDK 11
 - **OS**: Debian 11 (slim)
+- **Database Drivers**: MySQL, PostgreSQL, MS SQL Server, MongoDB, Oracle
 
 ## 🚀 Quick Start
 
@@ -34,6 +35,56 @@ docker run -d -p 8822:22 -v /local/path:/app/data --name spark-container lightco
 ```bash
 ssh root@localhost -p 8822
 # Password: spark
+```
+
+## 🗄️ Database Connection
+
+The image comes with pre-installed database drivers and connectors that are automatically loaded, allowing you to connect to various databases:
+
+### Connection in Code
+
+You can specify connection details directly in your code:
+
+```python
+from pyspark.sql import SparkSession
+
+jar_path = "/opt/spark/jars/db-drivers/mysql-connector.jar"
+driver_name = "com.mysql.cj.jdbc.Driver"
+
+# Create SparkSession
+spark = SparkSession.builder \
+    .appName("Database Connection") \
+    .config("spark.jars", mysql_jar_path) \
+    .getOrCreate()
+
+# Connect to MySQL 
+jdbc_url = "jdbc:mysql://your-mysql-server:3306/your_database" # If your are using local db, your db host should be docker0 ip 172.17.0.1, not localhost.
+jdbc_properties = {
+    "user": "username",
+    "password": "password",
+    "driver": driver_name
+}
+
+# Read data
+df = spark.read.jdbc(url=jdbc_url, table="your_table", properties=jdbc_properties)
+```
+
+### Available Database Drivers
+
+The following drivers are pre-installed:
+
+- **MySQL**: jar_path="/opt/spark/jars/db-drivers/mysql-connector.jar",  driver_name="com.mysql.cj.jdbc.Driver"
+- **PostgreSQL**: jar_path="/opt/spark/jars/db-drivers/postgresql-connector.jar",  driver_name="org.postgresql.Driver"
+- **MS SQL Server**: jar_path="/opt/spark/jars/db-drivers/mssql-connector.jar",  driver_name="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+- **Oracle**: jar_path="/opt/spark/jars/db-drivers/oracle-connector.jar",  driver_name="oracle.jdbc.driver.OracleDriver"
+- **MongoDB**: jar_path="/opt/spark/jars/db-drivers/mongodb-connector.jar",  driver_name="org.mongodb.spark.sql.connector.MongoTableProvider"
+
+### Using Custom Database Drivers
+
+```bash
+docker run -d -p 8822:22 \
+  -v /path/to/your/drivers:/opt/spark/jars/custom \
+  --name spark-container lightcone0204/spark-minimal:latest
 ```
 
 ## 💻 Usage Examples
@@ -158,11 +209,6 @@ Configure the SSH connection details:
 2. Right-click in the editor and select **Run**
 3. PyCharm will execute the code on the remote SSH interpreter in the Docker container
 
-#### Troubleshooting
-- **Connection refused**: Ensure the container is running and SSH port is mapped correctly
-- **Authentication failure**: Verify the password is 'spark' and SSH is properly configured
-
-
 ## 🛠️ Advanced Configuration
 
 ### Environment Variables
@@ -175,7 +221,7 @@ docker run -d -p 8822:22 -e PYSPARK_DRIVER_MEMORY=2g --name spark-container ligh
 
 Mount Spark configuration directory:
 ```bash
-docker run -d -p 8822:22 -v /local/spark/conf:/opt/spark/conf --name spark-container lightcone0204/spark-minimal:latest
+docker run -d -p 8822:22 -v /local/spark/conf:/opt/spark/conf/custom --name spark-container lightcone0204/spark-minimal:latest
 ```
 
 ### Persistent Spark History Server
@@ -189,11 +235,14 @@ docker run -d -p 8822:22 -p 18080:18080 -v /local/history/dir:/spark-events --na
 - Default SSH password is `spark`
 - You may see warnings about native Hadoop libraries in the container, which won't affect most applications
 - This image is optimized for local development and analysis, not recommended for production deployment
+- Database drivers are always loaded automatically
+- Connection details can be provided directly in your code
 
 ## 🔗 Related Links
 
 - [Apache Spark Official Documentation](https://spark.apache.org/docs/latest/)
 - [PySpark API Documentation](https://spark.apache.org/docs/latest/api/python/index.html)
+- [Spark JDBC Programming Guide](https://spark.apache.org/docs/latest/sql-data-sources-jdbc.html)
 
 ## 📄 License
 
