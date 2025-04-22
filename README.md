@@ -2,6 +2,12 @@
 
 This Docker image provides a lightweight development environment with Python 3.9 and Apache Spark 3.5.2, supporting remote connection via SSH, ideal for data analysis and machine learning projects. It is designed for quickly launching Spark services locally while maintaining a clean environment and isolation from your system dependencies, making it perfect for development, testing, and learning purposes.
 
+---
+
+For questions or suggestions for improvement, please contact me on [GitHub](https://github.com/lightconeSpace/spark-minimal) or [DockerHub](https://hub.docker.com/r/lightcone0204/spark-minimal). 
+
+---
+
 ## 📋 Component Versions
 
 - **Apache Spark**: 3.5.2 with Hadoop 3
@@ -137,7 +143,3 @@ docker run -d -p 8822:22 -p 18080:18080 -v /local/history/dir:/spark-events --na
 ## 📄 License
 
 Released under Apache License 2.0
-
----
-
-For questions or suggestions for improvement, please contact me on GitHub or DockerHub. 
