@@ -54,11 +54,11 @@ driver_name = "com.mysql.cj.jdbc.Driver"
 # Create SparkSession
 spark = SparkSession.builder \
     .appName("Database Connection") \
-    .config("spark.jars", mysql_jar_path) \
+    .config("spark.jars", jar_path) \
     .getOrCreate()
 
 # Connect to MySQL 
-jdbc_url = "jdbc:mysql://your-mysql-server:3306/your_database" # If your are using local db, your db host should be docker0 ip 172.17.0.1, not localhost.
+jdbc_url = "jdbc:mysql://your-db-server:3306/your_database" # If your are using local db, your db host should be docker0 ip 172.17.0.1, not localhost.
 jdbc_properties = {
     "user": "username",
     "password": "password",
