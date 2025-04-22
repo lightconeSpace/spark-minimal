@@ -101,12 +101,67 @@ spark.stop()
 
 ## 🔌 IDE Integration
 
-### PyCharm Configuration
+### PyCharm Configuration - Detailed Guide
 
-1. Add SSH interpreter in PyCharm
-2. Host: `localhost`, Port: `8822`
-3. Username: `root`, Password: `spark`
-4. Python interpreter path: `/usr/bin/python`
+#### Prerequisites
+- PyCharm Professional Edition (SSH interpreters are not available in Community Edition)
+- Docker container running from this image
+- SSH port exposed (e.g., 8822)
+
+#### Step 1: Open Project Settings
+1. Open your PyCharm project
+2. Navigate to **File → Settings** (Windows/Linux) or **PyCharm → Preferences** (macOS)
+3. In the Settings/Preferences dialog, select **Project → Python Interpreter**
+
+#### Step 2: Add SSH Interpreter
+1. Click the gear icon ⚙️ next to the Python Interpreter dropdown
+2. Select **Add...** from the dropdown menu
+3. In the left panel of the "Add Python Interpreter" dialog, select **SSH Interpreter**
+4. Choose **New server configuration**
+
+#### Step 3: Configure SSH Connection
+Configure the SSH connection details:
+- **Host**: `localhost` (or your server IP if running on remote machine)
+- **Port**: `8822` (or your custom SSH port)
+- **Username**: `root`
+- **Authentication type**: Password
+- **Password**: `spark`
+- Click **Next**
+
+#### Step 4: Set Python Interpreter Path
+1. In the next screen, for **Python interpreter path**, enter: `/usr/bin/python`
+2. Click **Next**
+
+#### Step 5: Configure Path Mappings
+1. In the path mappings screen, set up the synchronization between your local project and the container:
+   - **Local path**: `/path/to/your/local/project`
+   - **Remote path**: `/app/data`
+   - If you mounted a volume using `-v /local/path:/app/data`, ensure your path mappings reflect this
+
+2. Click **Finish**
+
+#### Step 6: Verify Interpreter
+1. Wait for PyCharm to complete the interpreter setup and indexing
+2. You should see the interpreter listed as "Python 3.9 (Remote SSH)" or similar
+3. In the interpreter details, you should see PySpark and related packages
+
+#### Step 7: Configure Run Configuration
+1. Go to **Run → Edit Configurations...**
+2. Click the **+** button and select **Python**
+3. Configure your run settings:
+   - **Script path**: Select your Python script
+   - **Python interpreter**: Select the SSH interpreter you just created
+   - **Working directory**: Set to your project directory
+
+#### Step 8: Running PySpark Code
+1. Open or create a Python file with PySpark code (like the example above)
+2. Right-click in the editor and select **Run**
+3. PyCharm will execute the code on the remote SSH interpreter in the Docker container
+
+#### Troubleshooting
+- **Connection refused**: Ensure the container is running and SSH port is mapped correctly
+- **Authentication failure**: Verify the password is 'spark' and SSH is properly configured
+
 
 ## 🛠️ Advanced Configuration
 
